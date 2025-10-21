@@ -67,43 +67,37 @@ result.real = cos(angle) * ampl;
 
 return result;
 }
-
-export void calculate_roots(uniform double roots_real[], uniform double roots_im[], uniform int n)
+//calculates function roots and RGB values of the pure colors in in HSV/HSL wheel they represent
+export void calculate_roots(uniform double roots_real[], uniform double roots_im[],uniform int roots_red[],uniform int roots_green[],uniform int roots_blue[], uniform int n)
 {
     foreach (i = 0 ... n) {
-            double angle = 2*i*PI/(double)n;
-            roots_real[i] = cos(angle);
-            roots_im[i] = sin(angle);
+            double angle_rad = 2*i*PI/(double)n;
+            roots_real[i] = cos(angle_rad);
+            roots_im[i] = sin(angle_rad);
+
+
+            const double angle = (double)i*360.0/(double)n;
+
+            const int sector_index = floor(angle/60.0);
+            const double offset_fract = (angle-((double)sector_index)*60.0)/60.0;
+
+            const int q = (int)(offset_fract * 255.0);
+            const int t = (int)((1.0 - offset_fract) * 255.0);
+
+            switch (sector_index) {
+                case 0: roots_red[i] = 255; roots_green[i] = q;   roots_blue[i] = 0; break;
+                case 1: roots_red[i] = t;   roots_green[i] = 255; roots_blue[i] = 0; break;
+                case 2: roots_red[i] = 0;   roots_green[i] = 255; roots_blue[i] = q; break;
+                case 3: roots_red[i] = 0;   roots_green[i] = t;   roots_blue[i] = 255; break;
+                case 4: roots_red[i] = q;   roots_green[i] = 0;   roots_blue[i] = 255; break;
+                case 5: roots_red[i] = 255; roots_green[i] = 0;   roots_blue[i] = t; break;
+            }
         }
 
 
 }
-//returns a pure color that a root indexes angle represents in HSV/HSL color models
-void getColor(int iterations, int root_index, int& R, int& G, int& B, int n) {
-    const double angle = (double)root_index*360.0/(double)n;
-
-    const int sector_index = floor(angle/60.0);
-    const double offset_fract = (angle-((double)sector_index)*60.0)/60.0;
-
-    const int q = (int)(offset_fract * 255.0);
-    const int t = (int)((1.0 - offset_fract) * 255.0);
-
-    switch (sector_index) {
-        case 0: R = 255; G = q; B = 0; break;
-        case 1: R = t; G = 255; B = 0; break;
-        case 2: R = 0; G = 255; B = q; break;
-        case 3: R = 0; G = t; B = 255; break;
-        case 4: R = q; G = 0; B = 255; break;
-        case 5: R = 255; G = 0; B = t; break;
-    }
-
-    const double intensity = ((double)iterations) / ((double)max_iterations);
-    R = (int)((double)(R) * (1.0 - intensity));
-    G = (int)((double)(G) * (1.0 - intensity));
-    B = (int)((double)(B) * (1.0 - intensity));
-
-}
-export void process_pixels(uniform int n,uniform double roots_real[], uniform double roots_im[],uniform int red_values[], uniform int green_values[], uniform int blue_values[])
+//roots_red - red component given to the roots, red_values - red components for each pixel
+export void process_pixels(uniform int n,uniform double roots_real[],uniform double roots_im[] , uniform int roots_red[],uniform int roots_green[],uniform int roots_blue[],uniform int red_values[], uniform int green_values[], uniform int blue_values[])
 {
     uniform double x_min = -pane_width/2;
     uniform double x_max = pane_width/2;
@@ -168,7 +162,18 @@ export void process_pixels(uniform int n,uniform double roots_real[], uniform do
             nearest_root.real  = roots_real[root_index];
             nearest_root.im = roots_im[root_index];
 
-            if (getNorm(sub(nearest_root,z)) < tolerance) getColor(iterations, root_index, r , g ,b, n);
+            if (getNorm(sub(nearest_root,z)) < tolerance)
+            {
+                r = roots_red[root_index];
+                g = roots_green[root_index];
+                b = roots_blue[root_index];
+                const double intensity = ((double)iterations) / ((double)max_iterations);
+                r = (int)((double)(r) * (1.0 - intensity));
+                g = (int)((double)(g) * (1.0 - intensity));
+                b = (int)((double)(b) * (1.0 - intensity));
+            }
+
+
         }
         red_values[i] = r;
         green_values[i] = g;
