@@ -1,0 +1,10 @@
+This is the repository for the Newton fractal generator project.
+
+The goal of this project was creating a program which generates a .ppm Newton fractal for the z^n - 1 function using the ispc/C++ languages. The ispc language is used to parallelize resulting image pixels RGB values.
+
+The project was developed on the Ubuntu 20.04 OS. On it, the "ispc --version" command returns "Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.28.2 (build commit 5bf8fb90b34122b5 @ 20250924, LLVM 20.1.8)" output. The "g++ --version" prints the "g++ (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0" output.
+
+For building/running the project, in the src/CMakeLists.txt file, the value of the CMAKE_ISPC_COMPILER variable has to be set to the location of the ispc compiler. Once that is done, it is enough to run the makefile provided.
+
+The system application was developed on uses the Intel processor with avx2, so for better optimizations, CMAKE_ISPC_INSTRUCTION_SETS variables value is set to "avx2".
+
